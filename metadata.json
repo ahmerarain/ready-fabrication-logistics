@@ -1,0 +1,6 @@
+{
+  "name": "RF Member Kit Box Workflow Demo",
+  "description": "A workflow tool to import steel plate parts, view them grouped by thickness and by assembly mark, tick them off as boxed, and generate delivery docket reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
