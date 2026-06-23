@@ -1,10 +1,10 @@
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
-import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const isVercel = process.env.VERCEL === "1";
 
 app.use(express.json());
 
@@ -575,16 +575,17 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-// Vite Middleware for development (port 3000 is externally bound)
+// Vite middleware for local dev; static files for local production
 async function setupViteServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
     console.log("Vite development middleware integrated with Express.");
-  } else {
+  } else if (!isVercel) {
     const distPath = path.resolve(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
@@ -598,34 +599,54 @@ async function setupViteServer() {
   });
 }
 
-async function startApp() {
-  // Dynamically import sqlite3 safely inside an async startup scope
-  try {
-    const sqliteImport = await import("sqlite3");
-    sqlite3 = sqliteImport.default || sqliteImport;
-  } catch (e) {
-    console.warn("sqlite3 could not be loaded. Switching seamlessly to high-compatibility JSON storage fallback.");
-    useFallback = true;
-  }
+let initPromise: Promise<void> | null = null;
 
-  // Initialize SQLite or Fallback Database
-  if (!useFallback && sqlite3) {
-    const dbPath = path.resolve(process.cwd(), "workflow.db");
-    db = new sqlite3.Database(dbPath, async (err: any) => {
-      if (err) {
-        console.error("Error opening SQLite database, falling back to JSON storage:", err.message);
-        await initFallbackDb();
-      } else {
-        console.log("Connected to the SQLite database at:", dbPath);
-        await initializeDatabase();
-      }
-    });
-  } else {
-    await initFallbackDb();
-  }
+export async function initializeApp(): Promise<void> {
+  if (initPromise) return initPromise;
 
-  // Set up Vite server and start listening
+  initPromise = (async () => {
+    if (isVercel) {
+      await initFallbackDb();
+      return;
+    }
+
+    try {
+      const sqliteImport = await import("sqlite3");
+      sqlite3 = sqliteImport.default || sqliteImport;
+    } catch (e) {
+      console.warn("sqlite3 could not be loaded. Switching seamlessly to high-compatibility JSON storage fallback.");
+      useFallback = true;
+    }
+
+    if (!useFallback && sqlite3) {
+      await new Promise<void>((resolve) => {
+        const dbPath = path.resolve(process.cwd(), "workflow.db");
+        db = new sqlite3.Database(dbPath, async (err: any) => {
+          if (err) {
+            console.error("Error opening SQLite database, falling back to JSON storage:", err.message);
+            await initFallbackDb();
+          } else {
+            console.log("Connected to the SQLite database at:", dbPath);
+            await initializeDatabase();
+          }
+          resolve();
+        });
+      });
+    } else {
+      await initFallbackDb();
+    }
+  })();
+
+  return initPromise;
+}
+
+async function startLocalServer() {
+  await initializeApp();
   await setupViteServer();
 }
 
-startApp();
+export { app };
+
+if (!isVercel) {
+  startLocalServer();
+}
