@@ -11,7 +11,7 @@ interface CSVImporterProps {
 export default function CSVImporter({ onImportSuccess, onResetToSeeds, onClearAll }: CSVImporterProps) {
   const [csvText, setCsvText] = useState("");
   const [previewParts, setPreviewParts] = useState<Partial<Part>[]>([]);
-  const [defaultAssemblyMark, setDefaultAssemblyMark] = useState("Column-A6");
+  const [defaultAssemblyMark, setDefaultAssemblyMark] = useState("CH-M01");
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -354,7 +354,7 @@ PL-105_bracket.dxf,PL-105,Triangle Bracket,150,150,8,11250,3x d14mm,None,1,Excep
                     setDefaultAssemblyMark(e.target.value);
                     if (csvText.trim()) parseCSVString(csvText);
                   }}
-                  placeholder="e.g. Column-A6"
+                  placeholder="e.g. CH-M01"
                   className="w-full text-xs border border-slate-205 rounded bg-white p-1.5 focus:outline-hidden focus:border-indigo-550"
                   title="If the DXF spreadsheet does not explicitly outline parent assembly tags, ReadyFab auto-allocates to this member."
                 />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Package, Table, Scissors, Upload, Hammer, Database, RefreshCw, Layers, CheckCircle, GitMerge, ShieldAlert, Award, FileText, Edit2, Check, X, HelpCircle, Sparkles } from "lucide-react";
+import { Package, Table, Scissors, Upload, Hammer, Database, RefreshCw, Layers, CheckCircle, GitMerge, ShieldAlert, Award, FileText, Edit2, Check, X, HelpCircle, Sparkles, BookOpen } from "lucide-react";
 import { Part, PartStatus } from "./types";
 import CSVImporter from "./components/CSVImporter";
 import PartsTable from "./components/PartsTable";
@@ -11,12 +11,13 @@ import ExceptionsHub from "./components/ExceptionsHub";
 import { enrichPartsList } from "./utils/traceabilityHelper";
 import QRTraceabilityResolver from "./components/QRTraceabilityResolver";
 import ProductTour from "./components/ProductTour";
-import SectionNester, { SectionPart } from "./components/SectionNester";
+import SectionNester, { SectionPart, PRESEEDED_SECTION_PARTS } from "./components/SectionNester";
+import CoatesStorybook from "./components/CoatesStorybook";
 
-type TabID = "simulation" | "traceability" | "boxing" | "cutting" | "inventory" | "import" | "exceptions" | "nester";
+type TabID = "simulation" | "traceability" | "boxing" | "cutting" | "inventory" | "import" | "exceptions" | "nester" | "storybook";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabID>("simulation");
+  const [activeTab, setActiveTab] = useState<TabID>("storybook");
   const [parts, setParts] = useState<Part[]>([]);
   const [sectionParts, setSectionParts] = useState<SectionPart[]>([]);
   const [stats, setStats] = useState({
@@ -229,6 +230,31 @@ export default function App() {
     }
   };
 
+  // One-click Coates Hire Demo Process Loader
+  const handleLoadCoatesHireDemo = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/parts/seed", { method: "POST" });
+      if (res.ok) {
+        // Reset 1D section parts to Coates Hire defaults
+        setSectionParts(PRESEEDED_SECTION_PARTS);
+        localStorage.setItem("rf_ns_section_parts", JSON.stringify(PRESEEDED_SECTION_PARTS));
+        
+        // Ensure job information is perfectly bound
+        setActiveJobName("Coates Hire Yard Assembly - Sydney");
+        setActiveJobNumber("CH-2026-SYD");
+        
+        await fetchDashboardData();
+        showTemporaryStatus("Coates Hire Demo loaded successfully! All plates & 1D sections synchronized.");
+      }
+    } catch (error) {
+      console.error(error);
+      showTemporaryStatus("Failed to load Coates Hire Demo process.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Truncate SQLite tables
   const handleClearAllSQLite = async () => {
     try {
@@ -337,6 +363,17 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab("storybook")}
+            className={`px-4 py-2 text-sm font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-xs border ${
+              activeTab === "storybook"
+                ? "bg-indigo-600 text-white border-indigo-700 font-black"
+                : "bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            Story Book
+          </button>
           <button
             onClick={() => setIsTourOpen(true)}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-indigo-700"
@@ -504,6 +541,15 @@ export default function App() {
           </div>
         ) : (
           <div className="animated-view">
+            {activeTab === "storybook" && (
+              <CoatesStorybook 
+                setActiveTab={setActiveTab}
+                onLoadDemoData={handleLoadCoatesHireDemo}
+                activeJobName={activeJobName}
+                activeJobNumber={activeJobNumber}
+              />
+            )}
+
             {activeTab === "simulation" && (
               <WorkflowSimulator 
                 parts={parts} 

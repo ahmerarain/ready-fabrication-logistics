@@ -129,7 +129,7 @@ const DEFAULT_MERCHANT_STOCKS: MerchantStock[] = [
 ];
 
 // Preseeded Demo Data matching both Mockup requirements and Sydney Metro Assemblies
-const PRESEEDED_SECTION_PARTS: SectionPart[] = [
+export const PRESEEDED_SECTION_PARTS: SectionPart[] = [
   // Mockup cases (Exact matching)
   {
     Part_ID: "CH-PL-101",
@@ -317,7 +317,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
   // CSV Template paster
   const handleCopySampleCSV = () => {
     const header = "Assembly Mark,Part Mark,Profile,Section Family,Material,Original Length,Allowance,Final Cut Length,Quantity,QR Reference\n";
-    const sample = `${header}Column-A6,PL-101-CUB,200 UB 22.3,Hot Rolled Sections,Grade 300,5510,10,5500,1,QR-COL-101\nColumn-A6,CS-A6,100x100x12 EA,Hot Rolled Sections,Grade 300,1250,0,1250,2,QR-COL-CS\nBeam-S4,B-S4-TR1,100x100x4.0 SHS,Hollow Sections,Grade 350,3018,3,3015,3,QR-BRAC-S4`;
+    const sample = `${header}CH-M01,CH-PL-101,200 UB 22.3,Hot Rolled Sections,Grade 300,5510,10,5500,1,QR-CH-M01-101\nCH-M01,CH-CS-01,100x100x12 EA,Hot Rolled Sections,Grade 300,1250,0,1250,2,QR-CH-M01-CS\nCH-B10,CH-TR-01,100x100x4.0 SHS,Hollow Sections,Grade 350,3018,3,3015,3,QR-CH-B10-TR1`;
     setImportText(sample);
   };
 
@@ -1132,7 +1132,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               className="w-full h-44 p-3 bg-slate-900 text-slate-100 font-mono text-[11px] rounded-xl focus:ring-1 focus:ring-indigo-500 focus:outline-none border border-slate-830 leading-normal"
-              placeholder="Assembly Mark,Part Mark,Profile,Section Family,Material,Original Length,Allowance,Final Cut Length,Quantity,QR Reference&#10;Column-A6,P-1001,100x100x1 EA,Hot Rolled Sections,Grade 300,5510,10,5500,1,QR-101-COL..."
+              placeholder="Assembly Mark,Part Mark,Profile,Section Family,Material,Original Length,Allowance,Final Cut Length,Quantity,QR Reference&#10;CH-M01,CH-PL-101,100x100x12 EA,Hot Rolled Sections,Grade 300,5510,10,5500,1,QR-CH-M01-101..."
             />
             <button
               onClick={handleImportCSV}
@@ -1165,7 +1165,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
                   value={newPart.Assembly_Mark}
                   onChange={(e) => setNewPart({...newPart, Assembly_Mark: e.target.value})}
                   className="w-full p-2 bg-white border border-slate-200 rounded text-slate-902 font-mono"
-                  placeholder="e.g. Column-A6"
+                  placeholder="e.g. CH-M01"
                 />
               </div>
 

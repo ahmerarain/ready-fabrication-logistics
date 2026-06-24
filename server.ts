@@ -1,38 +1,38 @@
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
+import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
-const isVercel = process.env.VERCEL === "1";
+const PORT = 3000;
 
 app.use(express.json());
 
 // Seed sample/mock parts include some default geometry for baseline and DXF parser output datasets
 const sampleParts = [
-  { Part_ID: "PL-101", Assembly_Mark: "Column-A6", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-101_10mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "None", Rotation: 0, COG: "100,150", Qty: 1 },
-  { Part_ID: "PL-102", Assembly_Mark: "Column-A6", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-102_10mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "None", Rotation: 0, COG: "100,150", Qty: 1 },
-  { Part_ID: "PL-103", Assembly_Mark: "Column-A6", Thickness: 12, RF_BIN: "BIN-22", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-103_12mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "", Shape: "Baseplate", Width: 300, Height: 450, Area: 135000, Holes: "6x d20mm", Slots: "None", Rotation: 90, COG: "150,225", Qty: 1 },
-  { Part_ID: "PL-104", Assembly_Mark: "Column-A6", Thickness: 12, RF_BIN: "BIN-22", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-104_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Baseplate", Width: 300, Height: 450, Area: 135000, Holes: "6x d20mm", Slots: "None", Rotation: 90, COG: "150,225", Qty: 1 },
-  { Part_ID: "PL-105", Assembly_Mark: "Column-A6", Thickness: 16, RF_BIN: "BIN-25", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-105_16mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Splicer Plate", Width: 180, Height: 360, Area: 64800, Holes: "8x d22mm", Slots: "2x slots", Rotation: 0, COG: "90,180", Qty: 1 },
+  { Part_ID: "PL-101", Assembly_Mark: "CH-M01", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-101_10mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "None", Rotation: 0, COG: "100,150", Qty: 1 },
+  { Part_ID: "PL-102", Assembly_Mark: "CH-M01", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-102_10mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "None", Rotation: 0, COG: "100,150", Qty: 1 },
+  { Part_ID: "PL-103", Assembly_Mark: "CH-M01", Thickness: 12, RF_BIN: "BIN-22", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-103_12mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "", Shape: "Baseplate", Width: 300, Height: 450, Area: 135000, Holes: "6x d20mm", Slots: "None", Rotation: 90, COG: "150,225", Qty: 1 },
+  { Part_ID: "PL-104", Assembly_Mark: "CH-M01", Thickness: 12, RF_BIN: "BIN-22", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-104_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Baseplate", Width: 300, Height: 450, Area: 135000, Holes: "6x d20mm", Slots: "None", Rotation: 90, COG: "150,225", Qty: 1 },
+  { Part_ID: "PL-105", Assembly_Mark: "CH-M01", Thickness: 16, RF_BIN: "BIN-25", RF_STAGE: "STAGE-1B", DXF_Filename: "PL-105_16mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Splicer Plate", Width: 180, Height: 360, Area: 64800, Holes: "8x d22mm", Slots: "2x slots", Rotation: 0, COG: "90,180", Qty: 1 },
 
-  // Case study: Column-B1 is fully placed (for Phase 4 completed kit box demo item)
-  { Part_ID: "PL-201", Assembly_Mark: "Column-B1", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-201_10mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Gantry confirmed placement.", Shape: "Rect", Width: 160, Height: 240, Area: 38400, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "80,120", Qty: 1 },
-  { Part_ID: "PL-202", Assembly_Mark: "Column-B1", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-202_10mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Gantry confirmed placement.", Shape: "Rect", Width: 160, Height: 240, Area: 38400, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "80,120", Qty: 1 },
-  { Part_ID: "PL-203", Assembly_Mark: "Column-B1", Thickness: 20, RF_BIN: "BIN-29", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-203_20mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Manual override verified.", Shape: "Gusset", Width: 250, Height: 250, Area: 50000, Holes: "5x d18mm", Slots: "None", Rotation: 45, COG: "125,125", Qty: 1 },
-  { Part_ID: "PL-204", Assembly_Mark: "Column-B1", Thickness: 20, RF_BIN: "BIN-29", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-204_20mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Manual override verified.", Shape: "Gusset", Width: 250, Height: 250, Area: 50000, Holes: "5x d18mm", Slots: "None", Rotation: 45, COG: "125,125", Qty: 1 },
+  // Case study: CH-M02 is fully placed (for completed kit box demo item)
+  { Part_ID: "PL-201", Assembly_Mark: "CH-M02", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-201_10mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Gantry confirmed placement.", Shape: "Rect", Width: 160, Height: 240, Area: 38400, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "80,120", Qty: 1 },
+  { Part_ID: "PL-202", Assembly_Mark: "CH-M02", Thickness: 10, RF_BIN: "BIN-21", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-202_10mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Gantry confirmed placement.", Shape: "Rect", Width: 160, Height: 240, Area: 38400, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "80,120", Qty: 1 },
+  { Part_ID: "PL-203", Assembly_Mark: "CH-M02", Thickness: 20, RF_BIN: "BIN-29", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-203_20mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Manual override verified.", Shape: "Gusset", Width: 250, Height: 250, Area: 50000, Holes: "5x d18mm", Slots: "None", Rotation: 45, COG: "125,125", Qty: 1 },
+  { Part_ID: "PL-204", Assembly_Mark: "CH-M02", Thickness: 20, RF_BIN: "BIN-29", RF_STAGE: "STAGE-2A", DXF_Filename: "PL-204_20mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "Manual override verified.", Shape: "Gusset", Width: 250, Height: 250, Area: 50000, Holes: "5x d18mm", Slots: "None", Rotation: 45, COG: "125,125", Qty: 1 },
 
-  // Case study: PL-301 in Rafter-R3 is "Missing" with operator note
-  { Part_ID: "PL-301", Assembly_Mark: "Rafter-R3", Thickness: 8, RF_BIN: "BIN-11", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-301_8mm.dxf", Status: "Missing", Exception_Type: "missing tag", Operator_Note: "Conveyor scanner tag read fault. Sent manual pick dispatch.", Shape: "End Plate", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "2x slots", Rotation: 15, COG: "100,150", Qty: 1 },
-  { Part_ID: "PL-302", Assembly_Mark: "Rafter-R3", Thickness: 8, RF_BIN: "BIN-11", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-302_8mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "End Plate", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "2x slots", Rotation: 15, COG: "100,150", Qty: 1 },
-  { Part_ID: "PL-303", Assembly_Mark: "Rafter-R3", Thickness: 8, RF_BIN: "BIN-12", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-303_8mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Triangle", Width: 150, Height: 150, Area: 11250, Holes: "3x d14mm", Slots: "None", Rotation: 0, COG: "50,50", Qty: 1 },
-  { Part_ID: "PL-304", Assembly_Mark: "Rafter-R3", Thickness: 12, RF_BIN: "BIN-23", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-304_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
-  { Part_ID: "PL-305", Assembly_Mark: "Rafter-R3", Thickness: 12, RF_BIN: "BIN-23", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-305_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
-  { Part_ID: "PL-306", Assembly_Mark: "Rafter-R3", Thickness: 12, RF_BIN: "BIN-24", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-306_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
+  // Case study: PL-301 in CH-R03 is "Missing" with operator note
+  { Part_ID: "PL-301", Assembly_Mark: "CH-R03", Thickness: 8, RF_BIN: "BIN-11", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-301_8mm.dxf", Status: "Missing", Exception_Type: "missing tag", Operator_Note: "Conveyor scanner tag read fault. Sent manual pick dispatch.", Shape: "End Plate", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "2x slots", Rotation: 15, COG: "100,150", Qty: 1 },
+  { Part_ID: "PL-302", Assembly_Mark: "CH-R03", Thickness: 8, RF_BIN: "BIN-11", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-302_8mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "End Plate", Width: 200, Height: 300, Area: 60000, Holes: "4x d18mm", Slots: "2x slots", Rotation: 15, COG: "100,150", Qty: 1 },
+  { Part_ID: "PL-303", Assembly_Mark: "CH-R03", Thickness: 8, RF_BIN: "BIN-12", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-303_8mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Triangle", Width: 150, Height: 150, Area: 11250, Holes: "3x d14mm", Slots: "None", Rotation: 0, COG: "50,50", Qty: 1 },
+  { Part_ID: "PL-304", Assembly_Mark: "CH-R03", Thickness: 12, RF_BIN: "BIN-23", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-304_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
+  { Part_ID: "PL-305", Assembly_Mark: "CH-R03", Thickness: 12, RF_BIN: "BIN-23", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-305_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
+  { Part_ID: "PL-306", Assembly_Mark: "CH-R03", Thickness: 12, RF_BIN: "BIN-24", RF_STAGE: "STAGE-3A", DXF_Filename: "PL-306_12mm.dxf", Status: "Pending", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 180, Height: 240, Area: 43200, Holes: "4x d16mm", Slots: "None", Rotation: 0, COG: "90,120", Qty: 1 },
 
-  // Case study: PL-402 in Brace-B10 has exception with notes
-  { Part_ID: "PL-401", Assembly_Mark: "Brace-B10", Thickness: 6, RF_BIN: "BIN-05", RF_STAGE: "STAGE-1A", DXF_Filename: "PL-401_6mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 120, Height: 180, Area: 21600, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "60,90", Qty: 1 },
-  { Part_ID: "PL-402", Assembly_Mark: "Brace-B10", Thickness: 6, RF_BIN: "BIN-05", RF_STAGE: "STAGE-1A", DXF_Filename: "PL-402_6mm.dxf", Status: "Exception", Exception_Type: "damaged plate", Operator_Note: "Conveyor drag buckle deform. Marked for QC scrap review.", Shape: "Rect", Width: 120, Height: 180, Area: 21600, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "60,90", Qty: 1 },
+  // Case study: PL-402 in CH-B10 has exception with notes
+  { Part_ID: "PL-401", Assembly_Mark: "CH-B10", Thickness: 6, RF_BIN: "BIN-05", RF_STAGE: "STAGE-1A", DXF_Filename: "PL-401_6mm.dxf", Status: "Placed", Exception_Type: "", Operator_Note: "", Shape: "Rect", Width: 120, Height: 180, Area: 21600, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "60,90", Qty: 1 },
+  { Part_ID: "PL-402", Assembly_Mark: "CH-B10", Thickness: 6, RF_BIN: "BIN-05", RF_STAGE: "STAGE-1A", DXF_Filename: "PL-402_6mm.dxf", Status: "Exception", Exception_Type: "damaged plate", Operator_Note: "Conveyor drag buckle deform. Marked for QC scrap review.", Shape: "Rect", Width: 120, Height: 180, Area: 21600, Holes: "4x d14mm", Slots: "None", Rotation: 0, COG: "60,90", Qty: 1 },
 ];
 
 let useFallback = false;
@@ -575,17 +575,16 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-// Vite middleware for local dev; static files for local production
+// Vite Middleware for development (port 3000 is externally bound)
 async function setupViteServer() {
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
     console.log("Vite development middleware integrated with Express.");
-  } else if (!isVercel) {
+  } else {
     const distPath = path.resolve(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
@@ -599,54 +598,34 @@ async function setupViteServer() {
   });
 }
 
-let initPromise: Promise<void> | null = null;
+async function startApp() {
+  // Dynamically import sqlite3 safely inside an async startup scope
+  try {
+    const sqliteImport = await import("sqlite3");
+    sqlite3 = sqliteImport.default || sqliteImport;
+  } catch (e) {
+    console.warn("sqlite3 could not be loaded. Switching seamlessly to high-compatibility JSON storage fallback.");
+    useFallback = true;
+  }
 
-export async function initializeApp(): Promise<void> {
-  if (initPromise) return initPromise;
+  // Initialize SQLite or Fallback Database
+  if (!useFallback && sqlite3) {
+    const dbPath = path.resolve(process.cwd(), "workflow.db");
+    db = new sqlite3.Database(dbPath, async (err: any) => {
+      if (err) {
+        console.error("Error opening SQLite database, falling back to JSON storage:", err.message);
+        await initFallbackDb();
+      } else {
+        console.log("Connected to the SQLite database at:", dbPath);
+        await initializeDatabase();
+      }
+    });
+  } else {
+    await initFallbackDb();
+  }
 
-  initPromise = (async () => {
-    if (isVercel) {
-      await initFallbackDb();
-      return;
-    }
-
-    try {
-      const sqliteImport = await import("sqlite3");
-      sqlite3 = sqliteImport.default || sqliteImport;
-    } catch (e) {
-      console.warn("sqlite3 could not be loaded. Switching seamlessly to high-compatibility JSON storage fallback.");
-      useFallback = true;
-    }
-
-    if (!useFallback && sqlite3) {
-      await new Promise<void>((resolve) => {
-        const dbPath = path.resolve(process.cwd(), "workflow.db");
-        db = new sqlite3.Database(dbPath, async (err: any) => {
-          if (err) {
-            console.error("Error opening SQLite database, falling back to JSON storage:", err.message);
-            await initFallbackDb();
-          } else {
-            console.log("Connected to the SQLite database at:", dbPath);
-            await initializeDatabase();
-          }
-          resolve();
-        });
-      });
-    } else {
-      await initFallbackDb();
-    }
-  })();
-
-  return initPromise;
-}
-
-async function startLocalServer() {
-  await initializeApp();
+  // Set up Vite server and start listening
   await setupViteServer();
 }
 
-export { app };
-
-if (!isVercel) {
-  startLocalServer();
-}
+startApp();

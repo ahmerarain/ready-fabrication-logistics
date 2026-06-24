@@ -88,6 +88,3 @@ npm start
 - `/src/components/CuttingGroups.tsx`: Grouping layouts and steel dimensional metadata categorizations.
 - `/src/types.ts`: Strictly typed core logistics and state schemas.
 - `/server.ts`: Built-in SQLite Express REST server api endpoints.
-# ready-fabrication-logistics
-# ready-fabrication-logistics
-# ready-fabrication-logistics
