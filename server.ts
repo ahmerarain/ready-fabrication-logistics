@@ -4,7 +4,7 @@ import fs from "fs/promises";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
 
@@ -53,16 +53,20 @@ async function saveFallback() {
 async function loadFallback() {
   try {
     const data = await fs.readFile(fallbackDbPath, "utf-8");
-    fallbackParts = JSON.parse(data);
+    const trimmed = data.trim();
+    if (!trimmed) {
+      throw new SyntaxError("Fallback JSON file is empty");
+    }
+    const parsed = JSON.parse(trimmed);
+    if (!Array.isArray(parsed)) {
+      throw new SyntaxError("Fallback JSON must be an array");
+    }
+    fallbackParts = parsed;
     console.log(`Loaded ${fallbackParts.length} records from fallback JSON database.`);
   } catch (err: any) {
-    if (err.code === "ENOENT") {
-      console.log("No fallback JSON file found, initializing a new one with default seeds.");
-      fallbackParts = JSON.parse(JSON.stringify(sampleParts));
-      await saveFallback();
-    } else {
-      console.error("Error reading fallback JSON file:", err);
-    }
+    console.warn("Fallback JSON unavailable or invalid, re-seeding defaults:", err.message || err);
+    fallbackParts = JSON.parse(JSON.stringify(sampleParts));
+    await saveFallback();
   }
 }
 
