@@ -7,6 +7,7 @@ This document outlines the architecture, sample files, and execution guidelines 
 ## 1. The One-Click Coates Hire Demo Process
 
 To ensure you can present the software reliably without manually rebuilding structures or fighting with CSV files:
+
 1. Open the application preview.
 2. You will land directly on the **Coates Storybook** tab (customized in violet).
 3. Click the dark button: **`LOAD COATES HIRE DEMO PROCESS`** at the top right.
@@ -23,6 +24,7 @@ To ensure you can present the software reliably without manually rebuilding stru
 Below are the exact CSV file templates pre-loaded by the demo process. You can copy these and use them in the **Import CSV Schedule** tab to demonstrate custom parsing.
 
 ### A. Flat Plate Geometry & Bin Routing Schedule
+
 ```csv
 Part_ID,Assembly_Mark,Thickness,RF_BIN,RF_STAGE,DXF_Filename,Status
 PL-101,CH-M01,10,BIN-21,STAGE-1B,PL-101_10mm.dxf,Pending
@@ -45,6 +47,7 @@ PL-402,CH-B10,6,BIN-05,STAGE-1A,PL-402_6mm.dxf,Exception
 ```
 
 ### B. 1D Linear Structural Beam Cut List
+
 ```csv
 Assembly Mark,Part Mark,Profile,Section Family,Material,Original Length,Allowance,Final Cut Length,Quantity,QR Reference
 CH-M01,CH-PL-101,200 UB 22.3,Hot Rolled Sections,Grade 300,5510,10,5500,1,QR-CH-M01-101
@@ -57,6 +60,7 @@ CH-B10,CH-TR-01,100x100x4.0 SHS,Hollow Sections,Grade 350,3018,3,3015,3,QR-CH-B1
 ## 3. Visual Storybook Sequence
 
 The **Coates Storybook** includes 12 visual interactive slides to walk investors through the unified workflow:
+
 1. **Coates Hire Job Loaded**: Active job registry binds all screens to a single consistent project.
 2. **Imported Project Data**: Demonstrates automated parsing of model CSV text streams into SQLite tables.
 3. **Plate Parts Grouped**: Groups flat parts by material thickness (e.g. 10mm, 12mm) to organize XY cutting sheets.
@@ -64,18 +68,20 @@ The **Coates Storybook** includes 12 visual interactive slides to walk investors
 5. **Plate Cutting & Sorting**: Real-time interactive status changes as parts move from laser sheets to sorting.
 6. **Member Kit Boxes Created**: Gathers finished elements into wooden shipping boxes grouped by assembly code.
 7. **Section Cut List Loaded**: Shows the high-tensile structural columns and rafter beams.
-8. **1D Section Nesting in Action**: Allocates rafter/column cuts to commercial stock bars considering kerf allowances.
+8. **1D Section Nesting in Action**: Allocates rafter/column cuts to commercial stock bars considering cut allowances.
 9. **Stock Bar Nesting Record**: Renders a clear 1D layout map of each wholesale bar showing scrap yields.
 10. **Member Kit Completion View**: Checks-in plate pieces and section beams into the same shipping kit box.
 11. **QR & Traceability Chain**: Scans tracking barcodes, resolving records down to the parent billing heat certificate.
-12. **Reports, Exports & Dispatch**: Generates raw CSV schedules for saws and digital shipping dockets for drivers.
+12. **Reports, Exports & Dispatch**: Generates raw CSV schedules for section cutting stations and digital shipping dockets for drivers.
 
 ---
 
 ## 4. Build & Run Instructions
 
 ### Development Environment
+
 To launch the server and frontend in a local development environment:
+
 ```bash
 # Install package dependencies
 npm install
@@ -85,7 +91,9 @@ npm run dev
 ```
 
 ### Production Build
+
 To compile the static React assets and bundle the TypeScript server into a production-safe self-contained package:
+
 ```bash
 # Bundle static files and compile server.ts to dist/server.cjs
 npm run build
@@ -106,6 +114,8 @@ npm run start
 
 ## 6. Recommended Next Steps for Commercialization
 
-1. **Direct Tekla API Webhooks**: Integrate Tekla/Trimble direct webhooks to bypass CSV importing entirely.
-2. **True 2D Nesting Engine (Bin Packing)**: Connect an external nesting web API (e.g., NestLib or Sigmanest) to perform true irregular shape packing geometry on raw metal sheets.
-3. **RFID & IoT Gateways**: Replace mock QR code clicks with physical BLE (Bluetooth Low Energy) or RFID industrial gateways to track components automatically as they cross gantry sensors.
+1. **Decoupled Production Backend Architecture**: Transition the current integrated Express setup into a separate, dedicated backend service (such as a separate Node.js/Express repository or NestJS API) deployed on scalable cloud infrastructure (AWS ECS, Google Cloud Run, etc.). This ensures modular separation of static React assets from dynamic backend endpoints.
+2. **Enterprise Database Integration (MongoDB or PostgreSQL)**: Migrate the lightweight local SQLite/JSON fallback setup to a scalable cloud database. Choose **MongoDB** (highly scalable, document-oriented, perfect for nested steel plate assemblies and variable dimensions) or **PostgreSQL / Supabase** (exceptional relational features for rigid tracking manifests, heat-number lineages, and multi-user transactional consistency).
+3. **Direct Tekla API Webhooks**: Integrate Tekla/Trimble direct webhooks to bypass CSV importing entirely and pull design models live into the shop floor.
+4. **True 2D Nesting Engine (Bin Packing)**: Connect an external nesting web API (e.g., NestLib or Sigmanest) to perform true irregular shape packing geometry on raw metal sheets.
+5. **RFID & IoT Gateways**: Replace mock QR code clicks with physical BLE (Bluetooth Low Energy) or RFID industrial gateways to track components automatically as they cross gantry sensors.

@@ -230,13 +230,13 @@ export default function CoatesStorybook({
       workspace: "nester",
       what: "The linear 1D nesting algorithm allocates beam cut requirements to commercial wholesale merchant stock bars.",
       why: "Minimizes structural steel scrap waste, directly reducing material procurement costs for contractors.",
-      details: "Calculates precise layouts considering standard merchant lengths (e.g. 12m), saw kerf allowances, and reusable offcut scrap limits.",
+      details: "Calculates precise layouts considering standard merchant lengths (e.g. 12m), cut allowances, and reusable offcut scrap limits.",
       actionText: "Run 1D linear Nesting Compiler",
       visualization: (
         <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 text-slate-100 space-y-4">
           <div className="grid grid-cols-3 gap-2">
             <div className="p-2 bg-slate-950 rounded border border-slate-850 text-center">
-              <span className="text-[8px] text-slate-500 uppercase block">Saw Kerf</span>
+              <span className="text-[8px] text-slate-500 uppercase block">Cut Allowance</span>
               <span className="text-xs font-bold font-mono">3 mm</span>
             </div>
             <div className="p-2 bg-slate-950 rounded border border-slate-850 text-center">
@@ -261,7 +261,7 @@ export default function CoatesStorybook({
       icon: Layers,
       workspace: "nester",
       what: "A high-fidelity visual layout map displays how cuts fit onto each stock bar, including waste margins.",
-      why: "Gives saw operators an explicit shearing guide, showing cut order, dimensions, and scrap lengths directly on their tablet.",
+      why: "Gives section cutting operators an explicit cut guide, showing cut order, dimensions, and scrap lengths directly on their tablet.",
       details: "Visualizes individual bars. For example, a 12m bar accommodates a 6800mm beam and a 4200mm beam, yielding 91.6% material efficiency.",
       actionText: "Inspect Nesting Bars",
       visualization: (
@@ -347,7 +347,7 @@ export default function CoatesStorybook({
       badge: "Step 12 of 12",
       icon: FileText,
       workspace: "nester",
-      what: "Generates high-contrast packing slips, linear cut spreadsheets, and CSV files for CNC lasers/saws.",
+      what: "Generates high-contrast packing slips, linear cut spreadsheets, and CSV files for CNC cutting equipment.",
       why: "Ensures smooth handoffs to delivery drivers and CNC mill operators, making dispatch transactions fully digital and paperless.",
       details: "Outputs complete shipping reports detailing total dispatch weight, packing progress, and exceptions logging.",
       actionText: "Generate Dispatch reports",
@@ -356,7 +356,7 @@ export default function CoatesStorybook({
           <FileText className="w-10 h-10 text-indigo-400 mx-auto animate-bounce" />
           <h4 className="text-xs font-bold font-mono">CH-2026-SYD_DispatchSummary.csv</h4>
           <span className="text-[10px] bg-indigo-950 text-indigo-300 py-1 px-3 rounded-full border border-indigo-900">
-            Export ready for CNC Sawing & Transport
+            Export ready for CNC Cutting & Transport
           </span>
         </div>
       )

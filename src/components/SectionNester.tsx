@@ -261,7 +261,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
     return saved ? JSON.parse(saved) : DEFAULT_MERCHANT_STOCKS;
   });
 
-  const [kerf, setKerf] = useState<number>(3); // standard 3mm kerf cutting allowance
+  const [kerf, setKerf] = useState<number>(3); // standard 3mm cut allowance per cut
   const [reusableThreshold, setReusableThreshold] = useState<number>(1000); // 1,000 mm minimum offcut recovery
   const [useMerchantStockOnly, setUseMerchantStockOnly] = useState<boolean>(false);
   
@@ -1046,7 +1046,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
           </div>
         </div>
 
-        {/* PANEL B: KERF, ALLOWANCES & QUICK CUT CUTLIST INSERTS */}
+        {/* PANEL B: CUT ALLOWANCES & QUICK CUT CUTLIST INSERTS */}
         <div className="lg:col-span-4 space-y-6 flex flex-col justify-stretch">
           <div className="bg-white border border-slate-205 rounded-2xl p-6 shadow-xs flex-1 flex flex-col justify-between">
             <div className="space-y-4">
@@ -1054,7 +1054,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
               
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2.5">
-                  Saw Kerf Allowance ({kerf} mm per cut)
+                  Cut Allowance ({kerf} mm material lost per cut)
                 </label>
                 <input
                   type="range"
@@ -1066,7 +1066,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
                   className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-650"
                 />
                 <div className="flex justify-between text-[10px] text-slate-400 font-mono font-bold mt-1.5">
-                  <span>0 mm (No Kerf)</span>
+                  <span>0 mm (No Allowance)</span>
                   <span className="text-indigo-600 font-extrabold">{kerf} mm Standard</span>
                   <span>10 mm (Heavy Plasma)</span>
                 </div>
@@ -1367,7 +1367,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
           <span>RUN 1D LINEAR NESTING COMPILER</span>
         </button>
         <p className="text-xs text-slate-450 mt-2.5 max-w-lg text-center font-medium">
-          Optimizes linear placement of exact adjusted cuts into {useMerchantStockOnly ? "restricted available Merchant inventories" : "configured wholesale standard stock lengths"}, accounting for standard cutting saw kerf.
+          Optimizes linear placement of exact adjusted cuts into {useMerchantStockOnly ? "restricted available Merchant inventories" : "configured wholesale standard stock lengths"}, accounting for material lost per cut (cut allowance).
         </p>
       </div>
 
@@ -1606,7 +1606,7 @@ export default function SectionNester({ parts, sectionParts, onSetSectionParts, 
           <div className="p-6 border-b border-slate-150 flex flex-wrap justify-between items-center gap-4 bg-slate-50 no-print">
             <div>
               <h3 className="text-lg font-bold text-slate-805">Step 3: Export 1D Section Cutting Report</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Unified factory production report. Ready for export to saw operators and site erectors.</p>
+              <p className="text-xs text-slate-500 mt-0.5">Unified factory production report. Ready for export to section cutting operators and site erectors.</p>
             </div>
             
             <button

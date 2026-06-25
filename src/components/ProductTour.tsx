@@ -62,7 +62,7 @@ export default function ProductTour({ isOpen, onClose, setActiveTab }: ProductTo
     {
       targetId: "tour-tab-nester",
       title: "Step 5: 1D Linear Nester & Kit Link",
-      content: "This is the 1D Long-Section nesting workstation. Group long beams by profile size, edit merchant stock configurations, saw kerf, and reusable offcut thresholds to generate gorgeous 1D linear cut schedules.",
+      content: "This is the 1D Long-Section nesting workstation. Group long beams by profile size, edit merchant stock configurations, cut allowance, and reusable offcut thresholds to generate gorgeous 1D linear cut schedules.",
       tab: "nester",
       tip: "Try clicking 'RUN 1D LINEAR NESTING COMPILER' on this screen!"
     },
